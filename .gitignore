@@ -1,0 +1,10 @@
+.idea
+info/
+.env
+
+*.jar
+*.war
+*.ear
+target/
+*.iml
+.mvn/wrapper/target/
