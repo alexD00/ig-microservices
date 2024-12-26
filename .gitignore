@@ -8,3 +8,4 @@ info/
 target/
 *.iml
 .mvn/wrapper/target/
+*.DS_Store
