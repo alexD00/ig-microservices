@@ -1,4 +1,6 @@
 spring:
+  cache:
+    type: redis
   datasource:
     url: jdbc:postgresql://${HOST}:${PORT}/${DB_NAME_POST_SERVICE}
     username: ${DB_POSTGRES_USER}
@@ -16,6 +18,10 @@ spring:
     baseline-version: 0
     user: ${DB_POSTGRES_USER}
     password: ${DB_POSTGRES_PASSWORD}
+  redis:
+    host: ms_redis
+    port: 6379
+    timeout: 5000
 
 server:
   port: 8060

@@ -8,6 +8,7 @@ import com.alex.post.mapper.PostMapper;
 import com.alex.post.model.Post;
 import com.alex.post.repository.PostRepository;
 import com.alex.post.service.PostService;
+import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +25,10 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserClient userClient;
 
-    // Use caching
     public PostResponse createPost(@Valid PostRequest postRequest){
-        if (userClient.findUserById(postRequest.userId()) == null){
+        try {
+            userClient.findUserById(postRequest.userId());
+        } catch (FeignException.NotFound ex) {
             throw new EntityNotFoundException("User with id: " + postRequest.userId() + " was not found");
         }
         Post post = postMapper.toPost(postRequest);

@@ -9,6 +9,7 @@ import com.alex.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,6 +52,7 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @CacheEvict(value = "users", key = "#userId")
     public String deleteUserById(Integer userId){
         if (!userRepository.existsById(userId)){
             throw new EntityNotFoundException("User with id: " + userId + " was not found");
