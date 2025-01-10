@@ -2,6 +2,7 @@ package com.alex.user.mapper;
 
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
+import com.alex.user.model.Role;
 import com.alex.user.model.User;
 import org.springframework.stereotype.Service;
 
@@ -14,9 +15,10 @@ public class UserMapper {
         return User.builder()
                 .firstName(userRequest.firstName())
                 .lastName(userRequest.lastName())
-                .email(userRequest.email())
+                .username(userRequest.username())
                 .password(userRequest.password())
                 .createdAt(LocalDateTime.now())
+                .role(Role.USER)
                 .build();
     }
 
@@ -25,7 +27,7 @@ public class UserMapper {
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getEmail(),
+                user.getUsername(),
                 user.getCreatedAt()
         );
     }

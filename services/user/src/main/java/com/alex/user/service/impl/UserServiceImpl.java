@@ -21,11 +21,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserResponse createUser(@Valid UserRequest userRequest) {
-        User user = userMapper.toUser(userRequest);
-
-        return userMapper.toUserResponse(userRepository.save(user));
-    }
+//    public UserResponse createUser(@Valid UserRequest userRequest) {
+//        User user = userMapper.toUser(userRequest);
+//
+//        return userMapper.toUserResponse(userRepository.save(user));
+//    }
 
     public UserResponse updateUser(Integer userId, @Valid UserRequest userRequest){
         User user = userRepository.findById(userId)
@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
 
         user.setFirstName(userRequest.firstName());
         user.setLastName(userRequest.lastName());
-        user.setEmail(userRequest.email());
+        user.setUsername(userRequest.username());
         user.setPassword(userRequest.password());
 
         return userMapper.toUserResponse(userRepository.save(user));

@@ -11,6 +11,14 @@ spring:
           uri: lb:http://USER-SERVICE
           predicates:
           - Path=/api/v1/users/**
+        - id: user-service-register
+          uri: lb:http://USER-SERVICE
+          predicates:
+          - Path=/api/v1/register/**
+        - id: user-service-login
+          uri: lb:http://USER-SERVICE
+          predicates:
+          - Path=/api/v1/login/**
         - id: post-service
           uri: lb:http://POST-SERVICE
           predicates:

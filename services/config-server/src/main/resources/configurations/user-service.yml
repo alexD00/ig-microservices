@@ -24,3 +24,6 @@ spring:
     timeout: 5000
 server:
   port: 8050
+
+secret:
+  secret-key: ${SECRET_KEY}

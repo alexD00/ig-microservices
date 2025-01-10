@@ -18,12 +18,12 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(
-            @RequestBody @Valid UserRequest userRequest
-    ){
-        return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
-    }
+//    @PostMapping
+//    public ResponseEntity<UserResponse> createUser(
+//            @RequestBody @Valid UserRequest userRequest
+//    ){
+//        return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
+//    }
 
     @PutMapping("/{user-id}")
     public ResponseEntity<UserResponse> updateUser(

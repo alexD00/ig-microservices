@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface UserService {
 
-    UserResponse createUser(@Valid UserRequest userRequest);
+//    UserResponse createUser(@Valid UserRequest userRequest);
 
     UserResponse updateUser(Integer userId, @Valid UserRequest userRequest);
 

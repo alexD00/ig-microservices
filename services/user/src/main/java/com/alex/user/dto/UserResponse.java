@@ -8,7 +8,7 @@ public record UserResponse(
         Integer id,
         String firstName,
         String lastName,
-        String email,
+        String username,
         LocalDateTime createdAt
 ) implements Serializable {
 }

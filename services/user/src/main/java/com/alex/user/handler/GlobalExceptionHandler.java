@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,13 +27,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateEmail(DataIntegrityViolationException exception){
         if (exception.getMessage().contains("duplicate key value violates unique constraint")){
-            ErrorResponse errorResponse = new ErrorResponse("A user with this email already exists",
+            ErrorResponse errorResponse = new ErrorResponse("A user with this username already exists",
                     HttpStatus.BAD_REQUEST.value(),
                     LocalDateTime.now());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
 
-        // If it's not duplicate email rethrow exception
+        // If it's not duplicate username rethrow exception
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("Database error: " + exception.getMessage(),
                         HttpStatus.BAD_REQUEST.value(),
@@ -47,5 +48,14 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException exception){
+        ErrorResponse errorResponse = new ErrorResponse("Invalid username or password",
+                                        HttpStatus.UNAUTHORIZED.value(),
+                                        LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 }
