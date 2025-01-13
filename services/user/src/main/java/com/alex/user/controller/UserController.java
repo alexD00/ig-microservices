@@ -5,7 +5,6 @@ import com.alex.user.dto.UserResponse;
 import com.alex.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +16,6 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-
-//    @PostMapping
-//    public ResponseEntity<UserResponse> createUser(
-//            @RequestBody @Valid UserRequest userRequest
-//    ){
-//        return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
-//    }
 
     @PutMapping("/{user-id}")
     public ResponseEntity<UserResponse> updateUser(
