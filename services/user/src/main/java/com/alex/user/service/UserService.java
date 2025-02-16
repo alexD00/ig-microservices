@@ -1,18 +1,20 @@
 package com.alex.user.service;
 
+import com.alex.user.dto.AuthResponse;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
-import jakarta.validation.Valid;
 
 import java.util.List;
 
 public interface UserService {
 
-    UserResponse updateUser(Integer userId, @Valid UserRequest userRequest);
+    AuthResponse updateUser(UserRequest userRequest, String authToken);
 
-    UserResponse findUserById(Integer userId);
+    UserResponse findLoggedUser(String authToken);
 
-    List<UserResponse> findAllUsers();
+    UserResponse findUserById(Integer userId, String authToken);
 
-    String deleteUserById(Integer userId);
+    List<UserResponse> findAllUsers(String authToken);
+
+    String deleteLoggedUser(String authToken);
 }

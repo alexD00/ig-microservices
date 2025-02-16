@@ -40,12 +40,12 @@ services:
       - microservices-net
     restart: unless-stopped
 
-  mail-dev:
-    image: maildev/maildev
-    container_name: ms_mail_dev
-    ports:
-      - 1080:1080
-      - 1025:1025
+#  mail-dev:
+#    image: maildev/maildev
+#    container_name: ms_mail_dev
+#    ports:
+#      - 1080:1080
+#      - 1025:1025
 
 networks:
   microservices-net:

@@ -1,5 +1,6 @@
 package com.alex.user.controller;
 
+import com.alex.user.dto.AuthResponse;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
 import com.alex.user.service.UserService;
@@ -17,30 +18,40 @@ public class UserController {
 
     private final UserService userService;
 
-    @PutMapping("/{user-id}")
-    public ResponseEntity<UserResponse> updateUser(
-            @PathVariable("user-id") Integer userId,
-            @RequestBody @Valid UserRequest userRequest
+    @PutMapping
+    public ResponseEntity<AuthResponse> updateUser(
+            @RequestBody @Valid UserRequest userRequest,
+            @RequestHeader(value = "Authorization") String authToken
     ){
-        return ResponseEntity.ok(userService.updateUser(userId, userRequest));
+        return ResponseEntity.ok(userService.updateUser(userRequest, authToken));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> findLoggedUser(
+            @RequestHeader(value = "Authorization") String authToken
+    ){
+       return ResponseEntity.ok(userService.findLoggedUser(authToken));
     }
 
     @GetMapping("/{user-id}")
     public ResponseEntity<UserResponse> findUserById(
-            @PathVariable("user-id") Integer userId
+            @PathVariable("user-id") Integer userId,
+            @RequestHeader(value = "Authorization") String authToken
     ){
-        return ResponseEntity.ok(userService.findUserById(userId));
+        return ResponseEntity.ok(userService.findUserById(userId, authToken));
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAllUsers(){
-        return ResponseEntity.ok(userService.findAllUsers());
+    public ResponseEntity<List<UserResponse>> findAllUsers(
+            @RequestHeader(value = "Authorization") String authToken
+    ){
+        return ResponseEntity.ok(userService.findAllUsers(authToken));
     }
 
-    @DeleteMapping("/{user-id}")
-    public ResponseEntity<String> deleteUserById(
-            @PathVariable("user-id") Integer userId
+    @DeleteMapping
+    public ResponseEntity<String> deleteLoggedUser(
+            @RequestHeader(value = "Authorization") String authToken
     ){
-        return ResponseEntity.ok(userService.deleteUserById(userId));
+        return ResponseEntity.ok(userService.deleteLoggedUser(authToken));
     }
 }
