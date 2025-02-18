@@ -4,13 +4,13 @@ import com.alex.post.client.UserClient;
 import com.alex.post.dto.PostRequest;
 import com.alex.post.dto.PostResponse;
 import com.alex.post.dto.PostUpdateRequest;
+import com.alex.post.exception.UserPermissionException;
 import com.alex.post.mapper.PostMapper;
 import com.alex.post.model.Post;
 import com.alex.post.repository.PostRepository;
 import com.alex.post.service.PostService;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,21 +25,27 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserClient userClient;
 
-    public PostResponse createPost(@Valid PostRequest postRequest){
+    public PostResponse createPost(PostRequest postRequest, String authToken, String userId){
         try {
-            userClient.findUserById(postRequest.userId());
+            userClient.findUserById(Integer.valueOf(userId), authToken);
         } catch (FeignException.NotFound ex) {
-            throw new EntityNotFoundException("User with id: " + postRequest.userId() + " was not found");
+            throw new EntityNotFoundException("User with id: " + userId + " was not found");
         }
-        Post post = postMapper.toPost(postRequest);
+        Post post = postMapper.toPost(postRequest, Integer.valueOf(userId));
 
-        return postMapper.toPostResponse(postRepository.save(post));
+        postRepository.save(post);
+
+        return postMapper.toPostResponse(post);
     }
 
     @Override
-    public PostResponse updatePost(Integer postId, PostUpdateRequest postRequest) {
+    public PostResponse updatePost(Integer postId, PostUpdateRequest postRequest, String userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id: " + postId + " was not found"));
+
+        if (!post.getUserId().equals(Integer.valueOf(userId))){
+                throw new UserPermissionException("User does not have permission to update this post");
+        }
 
         post.setContent(postRequest.content());
 
@@ -64,10 +70,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public String deletePostById(Integer postId) {
-        if (!postRepository.existsById(postId)){
-            throw new EntityNotFoundException("Post with id: " + postId + " was not found");
+    public String deletePostById(Integer postId, String userId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("Post with id: " + postId + " was not found"));
+
+        if (!post.getUserId().equals(Integer.valueOf(userId))) {
+            throw new UserPermissionException("User does not have permission to delete this post");
         }
+
         postRepository.deleteById(postId);
 
         return "Deleted post with id: " + postId;

@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 @Service
 public class PostMapper {
 
-    public Post toPost(PostRequest postRequest){
+    public Post toPost(PostRequest postRequest, Integer userId){
         return Post.builder()
                 .content(postRequest.content())
-                .userId(postRequest.userId())
+                .userId(userId)
                 .createdAt(LocalDateTime.now())
                 .build();
     }

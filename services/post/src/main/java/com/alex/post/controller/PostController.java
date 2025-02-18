@@ -21,17 +21,20 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostResponse> createPost(
-            @RequestBody @Valid PostRequest postRequest
+            @RequestBody @Valid PostRequest postRequest,
+            @RequestHeader(value = "Authorization") String authToken,
+            @RequestHeader(value = "X-User-Id") String userId
     ){
-        return new ResponseEntity<>(postService.createPost(postRequest), HttpStatus.CREATED);
+        return new ResponseEntity<>(postService.createPost(postRequest, authToken, userId), HttpStatus.CREATED);
     }
 
     @PutMapping("/{post-id}")
     public ResponseEntity<PostResponse> updatePost(
             @PathVariable("post-id") Integer postId,
-            @RequestBody @Valid PostUpdateRequest postRequest
+            @RequestBody @Valid PostUpdateRequest postRequest,
+            @RequestHeader(value = "X-User-Id") String userId
     ){
-        return ResponseEntity.ok(postService.updatePost(postId, postRequest));
+        return ResponseEntity.ok(postService.updatePost(postId, postRequest, userId));
     }
 
     @GetMapping("/{post-id}")
@@ -48,8 +51,9 @@ public class PostController {
 
     @DeleteMapping("/{post-id}")
     public ResponseEntity<String> deletePostById(
-            @PathVariable("post-id") Integer postId
+            @PathVariable("post-id") Integer postId,
+            @RequestHeader(value = "X-User-Id") String userId
     ){
-        return ResponseEntity.ok(postService.deletePostById(postId));
+        return ResponseEntity.ok(postService.deletePostById(postId, userId));
     }
 }
