@@ -1,9 +1,11 @@
 package com.alex.gateway.filter;
 
 import com.alex.gateway.util.JwtUtil;
+import io.jsonwebtoken.Claims;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,7 +25,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
         return (((exchange, chain) -> {
             if (routeValidator.isSecured.test(exchange.getRequest())) {
                 if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    throw new RuntimeException("missing authorization header");
+                    throw new RuntimeException("Missing authorization header");
                 }
                 String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -31,7 +33,14 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                 }
                 try {
                     jwtUtil.validateToken(authHeader);
+                    Claims claims = jwtUtil.getClaimsFromToken(authHeader);
 
+                    // Still contains the Auth header
+                    ServerHttpRequest modifiedRequest = exchange.getRequest().mutate()
+                            .header("X-User-Id", String.valueOf(claims.get("id", Integer.class)))
+                            .build();
+
+                    exchange = exchange.mutate().request(modifiedRequest).build();
                 } catch (Exception e) {
                     System.out.println("Invalid access...!");
                     throw new RuntimeException("Unauthorized access to the application");
