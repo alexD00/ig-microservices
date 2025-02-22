@@ -3,7 +3,6 @@ package com.alex.post.service;
 import com.alex.post.dto.PostRequest;
 import com.alex.post.dto.PostResponse;
 import com.alex.post.dto.PostUpdateRequest;
-import com.alex.post.exception.UserPermissionException;
 
 import java.util.List;
 
@@ -16,6 +15,10 @@ public interface PostService {
     PostResponse findPostById(Integer postId);
 
     List<PostResponse> findAllPost();
+
+    List<PostResponse> findLoggedUserPosts(String userId);
+
+    List<PostResponse> findPostsByUserId(String authToken, Integer userId);
 
     String deletePostById(Integer postId, String userId);
 }
