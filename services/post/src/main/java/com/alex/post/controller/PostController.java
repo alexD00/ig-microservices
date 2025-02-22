@@ -49,6 +49,21 @@ public class PostController {
         return ResponseEntity.ok(postService.findAllPost());
     }
 
+    @GetMapping("/my-posts")
+    public ResponseEntity<List<PostResponse>> findLoggedUserPosts(
+            @RequestHeader(value = "X-User-Id") String userId
+    ){
+        return ResponseEntity.ok(postService.findLoggedUserPosts(userId));
+    }
+
+    @GetMapping("/user/{user-id}")
+    public ResponseEntity<List<PostResponse>> findPostsByUserId(
+            @RequestHeader(value = "Authorization") String authToken,
+            @PathVariable("user-id") Integer userId
+    ){
+        return ResponseEntity.ok(postService.findPostsByUserId(authToken, userId));
+    }
+
     @DeleteMapping("/{post-id}")
     public ResponseEntity<String> deletePostById(
             @PathVariable("post-id") Integer postId,

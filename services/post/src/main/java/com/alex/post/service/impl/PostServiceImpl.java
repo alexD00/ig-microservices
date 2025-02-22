@@ -70,6 +70,36 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public List<PostResponse> findLoggedUserPosts(String userId) {
+        List<Post> postList = postRepository.findPostsByUserId(Integer.valueOf(userId));
+        List<PostResponse> postResponseList = new ArrayList<>();
+
+        for (Post post: postList){
+            postResponseList.add(postMapper.toPostResponse(post));
+        }
+
+        return postResponseList;
+    }
+
+    @Override
+    public List<PostResponse> findPostsByUserId(String authToken, Integer userId) {
+        try {
+            userClient.findUserById(userId, authToken);
+        } catch (FeignException.NotFound ex) {
+            throw new EntityNotFoundException("User with id: " + userId + " was not found");
+        }
+
+        List<Post> postList = postRepository.findPostsByUserId(userId);
+        List<PostResponse> postResponseList = new ArrayList<>();
+
+        for (Post post: postList){
+            postResponseList.add(postMapper.toPostResponse(post));
+        }
+
+        return postResponseList;
+    }
+
+    @Override
     public String deletePostById(Integer postId, String userId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id: " + postId + " was not found"));
