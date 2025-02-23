@@ -9,6 +9,8 @@ import com.alex.user.repository.UserRepository;
 import com.alex.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -65,13 +67,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAllUsers(String authToken){
+    public List<UserResponse> findAllUsers(int page, int size, String direction, String authToken){
         int authUserId = jwtService.extractUserId(authToken.substring(7));
         if (!userRepository.existsById(authUserId)){
             throw new EntityNotFoundException("User with id: " + authUserId + " was not found");
         }
 
-        return userRepository.findAll()
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, "createdAt"));
+
+        return userRepository.findAll(pageRequest)
                 .stream()
                 .map(userMapper::toUserResponse)
                 .toList();
