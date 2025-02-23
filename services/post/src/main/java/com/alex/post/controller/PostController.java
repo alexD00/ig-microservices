@@ -6,6 +6,8 @@ import com.alex.post.dto.PostUpdateRequest;
 import com.alex.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,23 +47,30 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> findAllPosts(){
-        return ResponseEntity.ok(postService.findAllPost());
+    public ResponseEntity<List<PostResponse>> findAllPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "desc") String direction
+    ){
+        return ResponseEntity.ok(postService.findAllPost(page, size, direction));
     }
 
     @GetMapping("/my-posts")
     public ResponseEntity<List<PostResponse>> findLoggedUserPosts(
+            @PageableDefault(size = 10, page = 0) Pageable pageable,
             @RequestHeader(value = "X-User-Id") String userId
+
     ){
-        return ResponseEntity.ok(postService.findLoggedUserPosts(userId));
+        return ResponseEntity.ok(postService.findLoggedUserPosts(pageable, userId));
     }
 
     @GetMapping("/user/{user-id}")
     public ResponseEntity<List<PostResponse>> findPostsByUserId(
+            @PageableDefault(size = 10, page = 0) Pageable pageable,
             @RequestHeader(value = "Authorization") String authToken,
             @PathVariable("user-id") Integer userId
     ){
-        return ResponseEntity.ok(postService.findPostsByUserId(authToken, userId));
+        return ResponseEntity.ok(postService.findPostsByUserId(pageable, authToken, userId));
     }
 
     @DeleteMapping("/{post-id}")

@@ -12,6 +12,9 @@ import com.alex.post.service.PostService;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -58,8 +61,13 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post with id: " + postId + " was not found"));
     }
 
-    public List<PostResponse> findAllPost(){
-        List<Post> postList = postRepository.findAll();
+    public List<PostResponse> findAllPost(int page, int size, String direction){
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(sortDirection, "createdAt"));
+
+        List<Post> postList = postRepository.findAll(pageRequest).getContent();
         List<PostResponse> postResponseList = new ArrayList<>();
 
         for (Post post: postList){
@@ -70,8 +78,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> findLoggedUserPosts(String userId) {
-        List<Post> postList = postRepository.findPostsByUserId(Integer.valueOf(userId));
+    public List<PostResponse> findLoggedUserPosts(Pageable pageable, String userId) {
+        List<Post> postList = postRepository.findPostsByUserId(pageable, Integer.valueOf(userId));
         List<PostResponse> postResponseList = new ArrayList<>();
 
         for (Post post: postList){
@@ -82,14 +90,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> findPostsByUserId(String authToken, Integer userId) {
+    public List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, Integer userId) {
         try {
             userClient.findUserById(userId, authToken);
         } catch (FeignException.NotFound ex) {
             throw new EntityNotFoundException("User with id: " + userId + " was not found");
         }
 
-        List<Post> postList = postRepository.findPostsByUserId(userId);
+        List<Post> postList = postRepository.findPostsByUserId(pageable, userId);
         List<PostResponse> postResponseList = new ArrayList<>();
 
         for (Post post: postList){

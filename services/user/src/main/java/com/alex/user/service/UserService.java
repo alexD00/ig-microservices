@@ -14,7 +14,7 @@ public interface UserService {
 
     UserResponse findUserById(Integer userId, String authToken);
 
-    List<UserResponse> findAllUsers(String authToken);
+    List<UserResponse> findAllUsers(int page, int size, String direction, String authToken);
 
     String deleteLoggedUser(String authToken);
 }

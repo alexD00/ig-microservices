@@ -43,9 +43,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> findAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "desc") String direction,
             @RequestHeader(value = "Authorization") String authToken
     ){
-        return ResponseEntity.ok(userService.findAllUsers(authToken));
+        return ResponseEntity.ok(userService.findAllUsers(page, size, direction, authToken));
     }
 
     @DeleteMapping
