@@ -9,6 +9,7 @@ import com.alex.user.repository.UserRepository;
 import com.alex.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(userRequest.password()));
 
         userRepository.save(user);
+        log.info("User with id: {} was updated successfully", user.getId());
 
         String token = jwtService.generateToken(user);
 
@@ -88,9 +91,11 @@ public class UserServiceImpl implements UserService {
     public String deleteLoggedUser(String authToken){
         int authUserId = jwtService.extractUserId(authToken.substring(7));
         if (!userRepository.existsById(authUserId)){
+            log.error("Attempted to delete non existing user with id: {}", authUserId);
             throw new EntityNotFoundException("User with id: " + authUserId + " was not found");
         }
         userRepository.deleteById(authUserId);
+        log.warn("User with id: {} was deleted successfully", authUserId);
 
         return "Deleted user with id: " + authUserId;
     }

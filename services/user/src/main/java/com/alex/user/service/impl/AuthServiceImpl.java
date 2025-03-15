@@ -8,6 +8,7 @@ import com.alex.user.model.User;
 import com.alex.user.repository.UserRepository;
 import com.alex.user.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -31,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(userRequest.password()));
 
         userRepository.save(user);
+        log.info("User with id: {} was registered successfully", user.getId());
 
         return "User account created successfully";
     }
@@ -45,10 +48,12 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
         }catch (AuthenticationException e){
+            log.error("User provided invalid authentication credentials");
             throw new BadCredentialsException("Invalid email / password");
         }
         User user = userRepository.findByUsername(authRequest.username()).orElseThrow();
         String token = jwtService.generateToken(user);
+        log.info("User authenticated successfully");
 
         return new AuthResponse("Logged in successfully", token);
     }
