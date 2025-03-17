@@ -12,6 +12,7 @@ import com.alex.post.service.PostService;
 import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService {
         Post post = postMapper.toPost(postRequest, Integer.valueOf(userId));
 
         postRepository.save(post);
+        log.info("Post with id: {} created successfully by user with id: {}", post.getId(), userId);
 
         return postMapper.toPostResponse(post);
     }
@@ -51,6 +54,7 @@ public class PostServiceImpl implements PostService {
         }
 
         post.setContent(postRequest.content());
+        log.info("Post with id: {} was updated successfully", post.getId());
 
         return postMapper.toPostResponse(postRepository.save(post));
     }
@@ -117,6 +121,7 @@ public class PostServiceImpl implements PostService {
         }
 
         postRepository.deleteById(postId);
+        log.warn("Post with id: {} was deleted successfully", post.getId());
 
         return "Deleted post with id: " + postId;
     }
