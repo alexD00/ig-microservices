@@ -88,6 +88,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserResponse> findAllLoggedUserFollowers(String authToken) {
+        int userId = jwtService.extractUserId(authToken);
+        // TODO
+        return List.of();
+    }
+
+    @Override
     public String deleteLoggedUser(String authToken){
         int authUserId = jwtService.extractUserId(authToken.substring(7));
         if (!userRepository.existsById(authUserId)){

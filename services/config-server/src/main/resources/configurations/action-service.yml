@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${HOST}:${PORT}/${DB_NAME_ACTION}
+    username: ${DB_POSTGRES_USER}
+    password: ${DB_POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    baseline-on-migrate: true
+    enabled: true
+    baseline-description: "init"
+    baseline-version: 0
+    user: ${DB_POSTGRES_USER}
+    password: ${DB_POSTGRES_PASSWORD}
+
+server:
+  port: 8070
