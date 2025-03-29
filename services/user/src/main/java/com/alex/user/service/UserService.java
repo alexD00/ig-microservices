@@ -18,5 +18,7 @@ public interface UserService {
 
     List<UserResponse> findAllLoggedUserFollowers(String authToken);
 
+    List<UserResponse> findAllLoggedUserFollowings(String authToken);
+
     String deleteLoggedUser(String authToken);
 }
