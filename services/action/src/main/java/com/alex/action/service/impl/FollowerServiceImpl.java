@@ -2,6 +2,7 @@ package com.alex.action.service.impl;
 
 import com.alex.action.client.UserClient;
 import com.alex.action.dto.FollowRequest;
+import com.alex.action.exception.InvalidActionException;
 import com.alex.action.model.Follower;
 import com.alex.action.repository.FollowerRepository;
 import com.alex.action.service.FollowerService;
@@ -12,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,10 @@ public class FollowerServiceImpl implements FollowerService {
             userClient.findUserById(userId, authToken); // Check if user to follow exists
         } catch (FeignException.NotFound ex) {
             throw new EntityNotFoundException("User with id: " + userId + " was not found");
+        }
+
+        if (userId.equals(Integer.valueOf(followerId))){
+            throw new InvalidActionException("User cannot follow their own account");
         }
 
         if (!followRequest.isFollow()){ // Unfollow user or no action
@@ -51,5 +57,19 @@ public class FollowerServiceImpl implements FollowerService {
 
         log.info("User with id: {} started following user with id: {}", followerId, userId);
         return "User with id: " + followerId + " started following user with id: " + userId;
+    }
+
+    @Override
+    public List<Integer> findUserFollowers(Integer userId) {
+        List<Integer> followersList = followerRepository.findFollowersIdByUserId(userId);
+
+        return followersList;
+    }
+
+    @Override
+    public List<Integer> findUserFollowing(Integer userId) {
+        List<Integer> followingList = followerRepository.findFollowingsIdByUserId(userId);
+
+        return followingList;
     }
 }

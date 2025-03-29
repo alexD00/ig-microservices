@@ -1,5 +1,6 @@
 package com.alex.user.service.impl;
 
+import com.alex.user.client.ActionClient;
 import com.alex.user.dto.AuthResponse;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final JwtServiceImpl jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final ActionClient actionClient;
 
     @Override
     public AuthResponse updateUser(UserRequest userRequest, String authToken){
@@ -89,9 +92,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> findAllLoggedUserFollowers(String authToken) {
-        int userId = jwtService.extractUserId(authToken);
-        // TODO
-        return List.of();
+        int userId = jwtService.extractUserId(authToken.substring(7));
+        List<UserResponse> followers = new ArrayList<>();
+        List<Integer> followersIds = actionClient.findFollowersIdOfUser(userId);
+
+        for (int id: followersIds){
+            followers.add(
+                    userMapper.toUserResponse(
+                            userRepository.findById(id).get()));
+        }
+
+        return followers;
+    }
+
+    @Override
+    public List<UserResponse> findAllLoggedUserFollowings(String authToken) {
+        int userId = jwtService.extractUserId(authToken.substring(7));
+        List<UserResponse> followings = new ArrayList<>();
+        List<Integer> followingsIds = actionClient.findFollowingsIdOfUser(userId);
+
+        for (int id: followingsIds){
+            followings.add(
+                    userMapper.toUserResponse(
+                            userRepository.findById(id).get()));
+        }
+
+        return followings;
     }
 
     @Override

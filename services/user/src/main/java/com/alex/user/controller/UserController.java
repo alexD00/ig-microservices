@@ -55,8 +55,14 @@ public class UserController {
     public ResponseEntity<List<UserResponse>> findAllLoggedUserFollowers(
             @RequestHeader(value = "Authorization") String authToken
     ){
-        // TODO
-        return null;
+        return ResponseEntity.ok(userService.findAllLoggedUserFollowers(authToken));
+    }
+
+    @GetMapping("/me/followings")
+    public ResponseEntity<List<UserResponse>> findAllLoggedUserFollowings(
+            @RequestHeader(value = "Authorization") String authToken
+    ){
+        return ResponseEntity.ok(userService.findAllLoggedUserFollowings(authToken));
     }
 
     @DeleteMapping

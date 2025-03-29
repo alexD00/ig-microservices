@@ -2,6 +2,7 @@ package com.alex.action.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import lombok.*;
 
@@ -13,11 +14,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@IdClass(FollowerId.class)
 @Table(name = "follower")
 public class Follower {
 
     @Id
     private Integer userId;
+    @Id
     private Integer followerId;
     private LocalDateTime startedFollowingAt;
 }
