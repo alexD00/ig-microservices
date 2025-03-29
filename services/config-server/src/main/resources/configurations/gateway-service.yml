@@ -25,6 +25,12 @@ spring:
           - Path=/api/v1/posts/**
           filters:
           - name: JwtAuthenticationFilter
+        - id: action-service
+          uri: lb:http://ACTION-SERVICE
+          predicates:
+            - Path=/api/v1/actions/**
+          filters:
+            - name: JwtAuthenticationFilter
 
 secret:
   secret-key: ${SECRET_KEY}

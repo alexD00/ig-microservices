@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByUsername(authRequest.username()).orElseThrow();
         String token = jwtService.generateToken(user);
-        log.info("User authenticated successfully");
+        log.info("User {} was authenticated successfully", authRequest.username());
 
         return new AuthResponse("Logged in successfully", token);
     }
