@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Entity
 @IdClass(FollowerId.class)
-@Table(name = "follower")
+@Table(name = "followers")
 public class Follower {
 
     @Id

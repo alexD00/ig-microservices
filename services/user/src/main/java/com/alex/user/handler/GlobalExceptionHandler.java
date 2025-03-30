@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
 
         // If it's not duplicate username rethrow exception
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Database error: " + exception.getMessage(),
+                .body(new ErrorResponse("Database error, make sure all required fields are not null",
                         HttpStatus.BAD_REQUEST.value(),
                         LocalDateTime.now()));
     }
