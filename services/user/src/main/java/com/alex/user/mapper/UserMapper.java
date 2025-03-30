@@ -17,6 +17,10 @@ public class UserMapper {
                 .lastName(userRequest.lastName())
                 .username(userRequest.username())
                 .password(userRequest.password())
+                .numFollowers(0)
+                .numFollowings(0)
+                // Account is public by default
+                .isAccountPublic(userRequest.isAccountPublic() == null ? true : userRequest.isAccountPublic())
                 .createdAt(LocalDateTime.now())
                 .role(Role.USER)
                 .build();
@@ -28,6 +32,9 @@ public class UserMapper {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
+                user.getNumFollowers(),
+                user.getNumFollowings(),
+                user.getIsAccountPublic(),
                 user.getCreatedAt()
         );
     }

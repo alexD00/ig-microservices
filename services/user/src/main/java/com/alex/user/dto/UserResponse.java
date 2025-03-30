@@ -9,6 +9,9 @@ public record UserResponse(
         String firstName,
         String lastName,
         String username,
+        Integer numFollowers,
+        Integer numFollowings,
+        Boolean isAccountPublic,
         LocalDateTime createdAt
 ) implements Serializable {
 }

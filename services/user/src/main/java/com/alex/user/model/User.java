@@ -26,6 +26,9 @@ public class User implements UserDetails {
     private String lastName;
     private String username;
     private String password;
+    private Integer numFollowers;
+    private Integer numFollowings;
+    private Boolean isAccountPublic;
     @Enumerated(value = EnumType.STRING)
     private Role role;
     private LocalDateTime createdAt;
