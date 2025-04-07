@@ -10,6 +10,7 @@ import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,8 @@ public class FollowerServiceImpl implements FollowerService {
 
     private final FollowerRepository followerRepository;
     private final UserClient userClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private static final String TOPIC = "user-follow-topic";
 
     @Override
     public String followUnfollowUser(FollowRequest followRequest, Integer userId, String authToken, String followerId) {
@@ -39,6 +42,10 @@ public class FollowerServiceImpl implements FollowerService {
             if (followerRepository.findByUserIdAndFollowerId(userId, Integer.valueOf(followerId)).isPresent()){
                 followerRepository.deleteFollowerByUserIdAndFollowerId(userId, Integer.valueOf(followerId));
                 log.info("User with id: {} unfollowed user with id: {}", followerId, userId);
+
+                String message = "UNFOLLOW_" + followerId + "_" + userId;
+                kafkaTemplate.send(TOPIC, message);
+
                 return "User with id: " + followerId + " unfollowed user with id: " + userId;
             }
 
@@ -54,6 +61,9 @@ public class FollowerServiceImpl implements FollowerService {
         Follower follower = new Follower(userId, Integer.valueOf(followerId), LocalDateTime.now());
 
         followerRepository.save(follower);
+
+        String message = "FOLLOW_" + followerId + "_" + userId;
+        kafkaTemplate.send(TOPIC, message);
 
         log.info("User with id: {} started following user with id: {}", followerId, userId);
         return "User with id: " + followerId + " started following user with id: " + userId;

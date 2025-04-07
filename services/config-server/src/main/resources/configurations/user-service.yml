@@ -18,10 +18,14 @@ spring:
     baseline-version: 0
     user: ${DB_POSTGRES_USER}
     password: ${DB_POSTGRES_PASSWORD}
-  redis:
-    host: ms_redis
-    port: 6379
-    timeout: 5000
+  kafka:
+    consumer:
+      bootstrap-servers: localhost:9092
+      group-id: user-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 server:
   port: 8050
 
