@@ -16,7 +16,6 @@ public class ActionConsumer {
 
     @KafkaListener(topics = "user-follow-topic", groupId = "user-service")
     public void handleFollowUnfollowEvents(String message){
-        System.out.println("=========THIS WAS CALLED=========");
         String[] parts = message.split("_");
         Integer followerId = Integer.parseInt(parts[1]);
         Integer userId = Integer.parseInt(parts[2]);
