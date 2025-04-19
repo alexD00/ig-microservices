@@ -1,5 +1,6 @@
 package com.alex.user.handler;
 
+import com.alex.user.exception.UserPermissionException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -57,5 +58,14 @@ public class GlobalExceptionHandler {
                                         LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(UserPermissionException.class)
+    public ResponseEntity<ErrorResponse> handleUserPermissionException(UserPermissionException exception){
+        ErrorResponse errorResponse = new ErrorResponse(exception.getMessage(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
 }

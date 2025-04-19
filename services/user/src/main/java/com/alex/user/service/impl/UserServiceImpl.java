@@ -4,6 +4,7 @@ import com.alex.user.client.ActionClient;
 import com.alex.user.dto.AuthResponse;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
+import com.alex.user.exception.UserPermissionException;
 import com.alex.user.mapper.UserMapper;
 import com.alex.user.model.User;
 import com.alex.user.repository.UserRepository;
@@ -39,6 +40,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(userRequest.lastName());
         user.setUsername(userRequest.username());
         user.setPassword(passwordEncoder.encode(userRequest.password()));
+        user.setIsAccountPublic(userRequest.isAccountPublic() == null ? user.getIsAccountPublic() : userRequest.isAccountPublic());
 
         userRepository.save(user);
         log.info("User with id: {} was updated successfully", user.getId());
@@ -97,9 +99,7 @@ public class UserServiceImpl implements UserService {
         List<Integer> followersIds = actionClient.findFollowersIdOfUser(userId);
 
         for (int id: followersIds){
-            followers.add(
-                    userMapper.toUserResponse(
-                            userRepository.findById(id).get()));
+            followers.add(userMapper.toUserResponse(userRepository.findById(id).get()));
         }
 
         return followers;
@@ -112,9 +112,54 @@ public class UserServiceImpl implements UserService {
         List<Integer> followingsIds = actionClient.findFollowingsIdOfUser(userId);
 
         for (int id: followingsIds){
-            followings.add(
-                    userMapper.toUserResponse(
-                            userRepository.findById(id).get()));
+            followings.add(userMapper.toUserResponse(userRepository.findById(id).get()));
+        }
+
+        return followings;
+    }
+
+    @Override
+    public List<UserResponse> findUserFollowers(Integer userId, String authToken) {
+        int authUserId = jwtService.extractUserId(authToken.substring(7));
+        User user = userRepository.
+                findById(userId).
+                orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " was not found"));
+
+        List <UserResponse> followers = new ArrayList<>();
+        List <Integer> followersIds = actionClient.findFollowersIdOfUser(userId);
+
+        if (user.getId() != authUserId) { // User can see their own followers
+            if (!user.getIsAccountPublic() && !followersIds.contains(authUserId)) { // Throw exception if account is private and logged user doesn't follow the target user
+                    throw new UserPermissionException("The account of userId: " + userId + " is private. You need to follow this user to see their followers");
+            }
+        }
+
+        for (int id: followersIds){
+            followers.add(userMapper.toUserResponse(userRepository.findById(id).get()));
+        }
+
+        return followers;
+    }
+
+    @Override
+    public List<UserResponse> findUserFollowings(Integer userId, String authToken) {
+        int authUserId = jwtService.extractUserId(authToken.substring(7));
+        User user = userRepository.
+                findById(userId).
+                orElseThrow(() -> new EntityNotFoundException("User with id: " + userId + " was not found"));
+
+        List<UserResponse> followings = new ArrayList<>();
+        List<Integer> followingsIds = actionClient.findFollowingsIdOfUser(userId);
+        List<Integer> followersIds = actionClient.findFollowersIdOfUser(userId);
+
+        if (user.getId() != authUserId){ // User can see their own followings
+            if (!user.getIsAccountPublic() && !followersIds.contains(authUserId)){ // Throw exception if account is private and logged user doesn't follow the target user
+                throw new UserPermissionException("The account of userId: " + userId + " is private. You need to follow this user to see their followings");
+            }
+        }
+
+        for (int id: followingsIds){
+            followings.add(userMapper.toUserResponse(userRepository.findById(id).get()));
         }
 
         return followings;

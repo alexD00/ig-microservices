@@ -1,7 +1,6 @@
 package com.alex.user.dto;
 
 import jakarta.validation.constraints.*;
-import jdk.jfr.BooleanFlag;
 
 public record UserRequest(
 
@@ -20,6 +19,7 @@ public record UserRequest(
         @Size(min = 8, message = "Password must be at least 8 characters long")
         @Pattern(regexp = "^[^\\s]{8,}$", message = "Password cannot contain any whitespace")
         String password,
+        @NotNull(message = "Account type is required")
         Boolean isAccountPublic
 ) {
 }
