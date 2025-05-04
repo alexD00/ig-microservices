@@ -27,4 +27,16 @@ public interface FollowerRepository extends JpaRepository<Follower, Integer> {
             nativeQuery = true
     )
     List<Integer> findFollowingsIdByUserId(Integer userId);
+
+    @Query(
+            value = "SELECT COUNT(follower_id) FROM followers WHERE user_id = ?1;",
+            nativeQuery = true
+    )
+    Integer countNumOfFollowers(Integer userId);
+
+    @Query(
+            value = "SELECT COUNT(user_id) FROM followers WHERE follower_id = ?1;",
+            nativeQuery = true
+    )
+    Integer countNumOfFollowings(Integer userId);
 }

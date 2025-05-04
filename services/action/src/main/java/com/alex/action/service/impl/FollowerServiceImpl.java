@@ -48,13 +48,7 @@ public class FollowerServiceImpl implements FollowerService {
         // Unfollow user or remove follow request or no action
         if (!followRequest.isFollow()){
             if (followerRepository.findByUserIdAndFollowerId(userId, Integer.valueOf(followerId)).isPresent()){
-                followerRepository.deleteFollowerByUserIdAndFollowerId(userId, Integer.valueOf(followerId));
-                log.info("User with id: {} unfollowed user with id: {}", followerId, userId);
-
-                String message = "UNFOLLOW_" + followerId + "_" + userId;
-                kafkaTemplate.send(TOPIC, message);
-
-                return "User with id: " + followerId + " unfollowed user with id: " + userId;
+                return unfollowUser(userId, Integer.parseInt(followerId));
             }
 
             return deleteFollowRequestIfExists(userId, Integer.valueOf(followerId));
@@ -114,11 +108,25 @@ public class FollowerServiceImpl implements FollowerService {
 
         followerRepository.save(follower);
 
-        String message = "FOLLOW_" + followerId + "_" + userId;
+        int userData = followerRepository.countNumOfFollowers(userId);
+        int followerData = followerRepository.countNumOfFollowings(followerId);
+        String message = "FOLLOW_" + followerId + "_" + userId + "_" + followerData + "_" + userData;
         kafkaTemplate.send(TOPIC, message);
 
         log.info("User with id: {} started following user with id: {}", followerId, userId);
         return "User with id: " + followerId + " started following user with id: " + userId;
+    }
+
+    public String unfollowUser(int userId, int followerId){
+        followerRepository.deleteFollowerByUserIdAndFollowerId(userId, followerId);
+
+        int userData = followerRepository.countNumOfFollowers(userId);
+        int followerData = followerRepository.countNumOfFollowings(followerId);
+        String message = "UNFOLLOW_" + followerId + "_" + userId + "_" + followerData + "_" + userData;
+        kafkaTemplate.send(TOPIC, message);
+
+        log.info("User with id: {} unfollowed user with id: {}", followerId, userId);
+        return "User with id: " + followerId + " unfollowed user with id: " + userId;
     }
 
     public String createFollowRequest(Integer userId, Integer followerId){
