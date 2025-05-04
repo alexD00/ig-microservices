@@ -24,5 +24,7 @@ public interface UserService {
 
     List<UserResponse> findUserFollowings(Integer userId, String authToken);
 
+    List<UserResponse> findFollowRequestsOfLoggedUser(String authToken);
+
     String deleteLoggedUser(String authToken);
 }

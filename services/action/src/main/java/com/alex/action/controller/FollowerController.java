@@ -1,6 +1,8 @@
 package com.alex.action.controller;
 
 import com.alex.action.dto.FollowRequest;
+import com.alex.action.dto.FollowerRequestDecision;
+import com.alex.action.model.FollowerRequest;
 import com.alex.action.service.FollowerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,22 @@ public class FollowerController {
             @RequestHeader(value = "X-User-Id") String followerId
     ){
         return new ResponseEntity<>(followerService.followUnfollowUser(followRequest, userId, authToken, followerId), HttpStatus.CREATED);
+    }
+
+    @GetMapping("follower-requests")
+    public ResponseEntity<List<FollowerRequest>> findFollowerRequestsOfLoggedUser(
+            @RequestHeader(value = "X-User-Id") String userId
+    ){
+        return new ResponseEntity<>(followerService.findFollowerRequestsOfLoggedUser(userId), HttpStatus.OK);
+    }
+
+    @PostMapping("follower-requests/{follower-id}")
+    public ResponseEntity<String> approveRejectFollowerRequest(
+            @RequestBody @Valid FollowerRequestDecision decision,
+            @RequestHeader(value = "X-User-Id") String userId,
+            @PathVariable(value = "follower-id") Integer followerId
+            ){
+        return new ResponseEntity<>(followerService.approveRejectFollowerRequest(decision, userId, followerId), HttpStatus.OK);
     }
 
     @GetMapping("/followers/{user-id}")

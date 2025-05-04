@@ -2,6 +2,7 @@ package com.alex.user.service.impl;
 
 import com.alex.user.client.ActionClient;
 import com.alex.user.dto.AuthResponse;
+import com.alex.user.dto.FollowerRequest;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
 import com.alex.user.exception.UserPermissionException;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,12 +32,21 @@ public class UserServiceImpl implements UserService {
     private final JwtServiceImpl jwtService;
     private final PasswordEncoder passwordEncoder;
     private final ActionClient actionClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private static final String TOPIC = "action-batchapprove-follower-requests-topic";
 
     @Override
     public AuthResponse updateUser(UserRequest userRequest, String authToken){
         int authUserId = jwtService.extractUserId(authToken.substring(7));
         User user = userRepository.findById(authUserId)
                 .orElseThrow(() -> new EntityNotFoundException("User with id: " + authUserId + " was not found"));
+
+        // If user changes their account from private to public, automatically approve all follower requests
+        if (!user.getIsAccountPublic() && userRequest.isAccountPublic()){
+            String message = "BATCHAPPROVE_" + user.getId();
+            kafkaTemplate.send(TOPIC, message);
+        }
+
         user.setFirstName(userRequest.firstName());
         user.setLastName(userRequest.lastName());
         user.setUsername(userRequest.username());
@@ -163,6 +174,19 @@ public class UserServiceImpl implements UserService {
         }
 
         return followings;
+    }
+
+    @Override
+    public List<UserResponse> findFollowRequestsOfLoggedUser(String authToken) {
+        int authUserId = jwtService.extractUserId(authToken.substring(7));
+        List<FollowerRequest> followerRequestList = actionClient.findFollowerRequestsOfLoggedUser(String.valueOf(authUserId));
+        List<UserResponse> userRequestList = new ArrayList<>();
+
+        for (FollowerRequest request: followerRequestList){
+            userRequestList.add(userMapper.toUserResponse(userRepository.findById(request.followerRequesterId()).get()));
+        }
+
+        return userRequestList;
     }
 
     @Override
