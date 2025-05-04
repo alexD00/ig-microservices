@@ -110,7 +110,9 @@ public class UserServiceImpl implements UserService {
         List<Integer> followersIds = actionClient.findFollowersIdOfUser(userId);
 
         for (int id: followersIds){
-            followers.add(userMapper.toUserResponse(userRepository.findById(id).get()));
+            if (userRepository.findById(id).isPresent()) {
+                followers.add(userMapper.toUserResponse(userRepository.findById(id).get()));
+            }
         }
 
         return followers;

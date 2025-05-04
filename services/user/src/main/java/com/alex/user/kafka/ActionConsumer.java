@@ -19,39 +19,26 @@ public class ActionConsumer {
         String[] parts = message.split("_");
         Integer followerId = Integer.parseInt(parts[1]);
         Integer userId = Integer.parseInt(parts[2]);
+        Integer followerData = Integer.parseInt(parts[3]);
+        Integer userData = Integer.parseInt(parts[4]);
 
-        if (message.startsWith("FOLLOW")){
-            incrementFollowers(userId);
-            incrementFollowings(followerId);
-        } else if (message.startsWith("UNFOLLOW")) {
-            decreaseFollowers(userId);
-            decreaseFollowings(followerId);
+        if (message.startsWith("FOLLOW") || message.startsWith("UNFOLLOW")){
+            updateFollowers(userId, userData);
+            updateFollowings(followerId, followerData);
         }else {
             log.error("This Kafka message is not supported for user topic");
         }
     }
 
-    private void incrementFollowers(Integer userId) {
+    private void updateFollowers(Integer userId, Integer userData) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowers(user.getNumFollowers() + 1);
+        user.setNumFollowers(userData);
         userRepository.save(user);
     }
 
-    private void incrementFollowings(Integer userId) {
+    private void updateFollowings(Integer userId, Integer userData) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowings(user.getNumFollowings() + 1);
-        userRepository.save(user);
-    }
-
-    private void decreaseFollowers(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowers(user.getNumFollowers() - 1);
-        userRepository.save(user);
-    }
-
-    private void decreaseFollowings(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowings(user.getNumFollowings() - 1);
+        user.setNumFollowings(userData);
         userRepository.save(user);
     }
 }
