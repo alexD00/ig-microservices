@@ -2,6 +2,7 @@ package com.alex.action.service.impl;
 
 import com.alex.action.client.UserClient;
 import com.alex.action.dto.FollowRequest;
+import com.alex.action.dto.FollowerRequestDecision;
 import com.alex.action.dto.UserDto;
 import com.alex.action.exception.InvalidActionException;
 import com.alex.action.model.Follower;
@@ -69,7 +70,47 @@ public class FollowerServiceImpl implements FollowerService {
             return createFollowRequest(userId, Integer.valueOf(followerId));
         }
 
-        Follower follower = new Follower(userId, Integer.valueOf(followerId), LocalDateTime.now());
+        return followUser(userId, Integer.parseInt(followerId));
+    }
+
+    @Override
+    public List<FollowerRequest> findFollowerRequestsOfLoggedUser(String userId) {
+        return followerRequestRepository
+                .findFollowerRequestsOfLoggedUser(Integer.valueOf(userId));
+    }
+
+    @Override
+    public String approveRejectFollowerRequest(FollowerRequestDecision decision, String userId, Integer followerId) {
+        Optional<FollowerRequest> optionalFollowerRequest =
+                followerRequestRepository
+                        .findByUserIdAndFollowerRequesterId(Integer.valueOf(userId), followerId);
+
+        // If follow request doesn't exist throw exception
+        if (optionalFollowerRequest.isEmpty()){
+            throw new InvalidActionException(
+                    "UserId: " + userId + " does not have a follow request from userId: " + followerId
+            );
+        }
+
+        if (decision.isApprove() == 1){
+            followerRequestRepository
+                    .deleteFollowerRequestByUserIdAndFollowerRequesterId(Integer.valueOf(userId), followerId);
+
+            log.info("UserId: {} accepted follow request from userId: {}", userId, followerId);
+            return followUser(Integer.parseInt(userId), followerId);
+        } else if (decision.isApprove() == 0) {
+            followerRequestRepository
+                    .deleteFollowerRequestByUserIdAndFollowerRequesterId(Integer.valueOf(userId), followerId);
+
+            log.info("UserId {} rejected follow request from userId: {}", userId, followerId);
+            return "Rejected follow request from userId: " + followerId;
+        }else {
+            throw new RuntimeException("isApprove values must be either 1 or 0");
+        }
+    }
+
+    public String followUser(int userId, int followerId){
+        Follower follower = new Follower(userId, followerId, LocalDateTime.now());
 
         followerRepository.save(follower);
 
@@ -88,11 +129,13 @@ public class FollowerServiceImpl implements FollowerService {
         FollowerRequest followerRequest = new FollowerRequest(userId, followerId, LocalDateTime.now());
         followerRequestRepository.save(followerRequest);
 
+        log.info("User with id: {} requested to follow user with id: {}", followerId, userId);
         return "Requested to follow userId: " + userId;
     }
 
     public String deleteFollowRequestIfExists(Integer userId, Integer followerId){
-        Optional<FollowerRequest> followerRequest = followerRequestRepository.findByUserIdAndFollowerRequesterId(userId, followerId);
+        Optional<FollowerRequest> followerRequest = followerRequestRepository
+                .findByUserIdAndFollowerRequesterId(userId, followerId);
 
         if (followerRequest.isPresent()){ // If a follow request exists remove it
             followerRequestRepository.delete(followerRequest.get());
@@ -107,15 +150,11 @@ public class FollowerServiceImpl implements FollowerService {
 
     @Override
     public List<Integer> findUserFollowers(Integer userId) {
-        List<Integer> followersList = followerRepository.findFollowersIdByUserId(userId);
-
-        return followersList;
+        return followerRepository.findFollowersIdByUserId(userId);
     }
 
     @Override
     public List<Integer> findUserFollowing(Integer userId) {
-        List<Integer> followingList = followerRepository.findFollowingsIdByUserId(userId);
-
-        return followingList;
+        return followerRepository.findFollowingsIdByUserId(userId);
     }
 }
