@@ -22,4 +22,7 @@ public interface FollowerRequestRepository extends JpaRepository<FollowerRequest
 
     @Transactional
     void deleteFollowerRequestByUserId(Integer userId);
+
+    @Transactional
+    void deleteFollowerRequestByFollowerRequesterId(Integer userId);
 }

@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,19 +28,30 @@ public class ActionConsumer {
             updateFollowers(userId, userData);
             updateFollowings(followerId, followerData);
         }else {
-            log.error("This Kafka message is not supported for user topic");
+            log.error("This Kafka message is not supported for user-follow topic");
         }
     }
 
     private void updateFollowers(Integer userId, Integer userData) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowers(userData);
-        userRepository.save(user);
+        // Using optional to get the user because when a user account is deleted the user is removed from the db
+        // before the asynchronous call finishes. Using optional ensures that if the user was deleted it will be skipped
+        // and the app won't fail with exceptions
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        if (optionalUser.isPresent()){
+            User user = optionalUser.get();
+            user.setNumFollowers(userData);
+            userRepository.save(user);
+        }
     }
 
     private void updateFollowings(Integer userId, Integer userData) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        user.setNumFollowings(userData);
-        userRepository.save(user);
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        if (optionalUser.isPresent()){
+            User user = optionalUser.get();
+            user.setNumFollowings(userData);
+            userRepository.save(user);
+        }
     }
 }
