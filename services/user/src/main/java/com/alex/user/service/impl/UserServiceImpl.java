@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ActionClient actionClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private static final String TOPIC = "action-batchapprove-follower-requests-topic";
+    private static final String TOPIC = "action-topic";
 
     @Override
     public AuthResponse updateUser(UserRequest userRequest, String authToken){
@@ -198,6 +198,11 @@ public class UserServiceImpl implements UserService {
             log.error("Attempted to delete non existing user with id: {}", authUserId);
             throw new EntityNotFoundException("User with id: " + authUserId + " was not found");
         }
+
+        // Remove user activity in action service
+        String message = "DELETEUSERACTIVITY_" + authUserId;
+        kafkaTemplate.send(TOPIC, message);
+
         userRepository.deleteById(authUserId);
         log.warn("User with id: {} was deleted successfully", authUserId);
 
