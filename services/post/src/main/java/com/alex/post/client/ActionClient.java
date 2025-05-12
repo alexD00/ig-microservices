@@ -15,4 +15,10 @@ public interface ActionClient {
             @PathVariable("user-id") Integer userId,
             @RequestHeader("Authorization") String token
     );
+
+    @GetMapping("api/v1/actions/followers/{user-id}")
+    List<Integer> findUserFollowers(
+            @PathVariable("user-id") Integer userId,
+            @RequestHeader("Authorization") String token
+    );
 }

@@ -5,6 +5,7 @@ import com.alex.post.client.UserClient;
 import com.alex.post.dto.PostRequest;
 import com.alex.post.dto.PostResponse;
 import com.alex.post.dto.PostUpdateRequest;
+import com.alex.post.dto.UserDto;
 import com.alex.post.exception.UserPermissionException;
 import com.alex.post.mapper.PostMapper;
 import com.alex.post.model.Post;
@@ -14,14 +15,12 @@ import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,11 +36,8 @@ public class PostServiceImpl implements PostService {
     private final ActionClient actionClient;
 
     public PostResponse createPost(PostRequest postRequest, String authToken, String userId){
-        try {
-            userClient.findUserById(Integer.valueOf(userId), authToken);
-        } catch (FeignException.NotFound ex) {
-            throw new EntityNotFoundException("User with id: " + userId + " was not found");
-        }
+        checkUserExists(Integer.parseInt(userId), authToken);
+
         Post post = postMapper.toPost(postRequest, Integer.valueOf(userId));
 
         postRepository.save(post);
@@ -65,10 +61,13 @@ public class PostServiceImpl implements PostService {
         return postMapper.toPostResponse(postRepository.save(post));
     }
 
-    public PostResponse findPostById(Integer postId){
-        return postRepository.findById(postId)
-                .map(postMapper::toPostResponse)
+    public PostResponse findPostById(String authToken, String loggedUserId, Integer postId){
+        Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with id: " + postId + " was not found"));
+
+        checkPostViewingPermissions(Integer.parseInt(loggedUserId), post.getUserId(), authToken);
+
+        return postMapper.toPostResponse(post);
     }
 
     public List<PostResponse> findAllPost(int page, int size, String direction){
@@ -100,12 +99,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, Integer userId) {
-        try {
-            userClient.findUserById(userId, authToken);
-        } catch (FeignException.NotFound ex) {
-            throw new EntityNotFoundException("User with id: " + userId + " was not found");
-        }
+    public List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, String loggedUserId, Integer userId) {
+        checkUserExists(userId, authToken);
+        checkPostViewingPermissions(Integer.parseInt(loggedUserId), userId, authToken);
 
         List<Post> postList = postRepository.findPostsByUserId(pageable, userId);
         List<PostResponse> postResponseList = new ArrayList<>();
@@ -119,12 +115,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostResponse> findLoggedUserFeed(Pageable pageable, String authToken, String userId) {
-        // Ensure that user exists
-        try {
-            userClient.findUserById(Integer.valueOf(userId), authToken);
-        } catch (FeignException.NotFound ex) {
-            throw new EntityNotFoundException("User with id: " + userId + " was not found");
-        }
+        checkUserExists(Integer.parseInt(userId), authToken);
 
         List<Integer> followingsIdList;
         List<Post> postList = new ArrayList<>();
@@ -168,5 +159,30 @@ public class PostServiceImpl implements PostService {
         log.warn("Post with id: {} was deleted successfully", post.getId());
 
         return "Deleted post with id: " + postId;
+    }
+
+    private void checkPostViewingPermissions(int loggedUserId, int postAuthorId, String authToken){
+        UserDto userDto;
+        List<Integer> postAuthorFollowersIdList;
+        try {
+            userDto = userClient.findUserById(postAuthorId, authToken);
+            postAuthorFollowersIdList = actionClient.findUserFollowers(postAuthorId, authToken);
+        }catch (FeignException ex){
+            throw new RuntimeException(ex);
+        }
+
+        // User must follow author of post to view the post if post author account is private
+        if (!userDto.isAccountPublic() && !postAuthorFollowersIdList.contains(loggedUserId) && loggedUserId != postAuthorId){
+            throw new UserPermissionException("User does not have permission to view this post. " +
+                    "Post authorId: " + postAuthorId + " has a private account and you don't follow them");
+        }
+    }
+
+    private void checkUserExists(int userId, String authToken){
+        try {
+            userClient.findUserById(userId, authToken);
+        } catch (FeignException.NotFound ex) {
+            throw new EntityNotFoundException("User with id: " + userId + " was not found");
+        }
     }
 }

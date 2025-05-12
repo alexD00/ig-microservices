@@ -41,9 +41,11 @@ public class PostController {
 
     @GetMapping("/{post-id}")
     public ResponseEntity<PostResponse> findPostById(
+            @RequestHeader(value = "Authorization") String authToken,
+            @RequestHeader(value = "X-User-Id") String loggedUserId,
             @PathVariable("post-id") Integer postId
     ){
-        return ResponseEntity.ok(postService.findPostById(postId));
+        return ResponseEntity.ok(postService.findPostById(authToken, loggedUserId, postId));
     }
 
     @GetMapping
@@ -68,9 +70,10 @@ public class PostController {
     public ResponseEntity<List<PostResponse>> findPostsByUserId(
             @PageableDefault(size = 10, page = 0) Pageable pageable,
             @RequestHeader(value = "Authorization") String authToken,
+            @RequestHeader(value = "X-User-Id") String loggedUserId,
             @PathVariable("user-id") Integer userId
     ){
-        return ResponseEntity.ok(postService.findPostsByUserId(pageable, authToken, userId));
+        return ResponseEntity.ok(postService.findPostsByUserId(pageable, authToken, loggedUserId, userId));
     }
 
     @GetMapping("/my-feed")
