@@ -13,13 +13,13 @@ public interface PostService {
 
     PostResponse updatePost(Integer postId, PostUpdateRequest postRequest, String userId);
 
-    PostResponse findPostById(Integer postId);
+    PostResponse findPostById(String authToken, String loggedUserId, Integer postId);
 
     List<PostResponse> findAllPost(int page, int size, String direction);
 
     List<PostResponse> findLoggedUserPosts(Pageable pageable, String userId);
 
-    List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, Integer userId);
+    List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, String loggedUserId, Integer userId);
 
     List<PostResponse> findLoggedUserFeed(Pageable pageable, String authToken, String userId);
 
