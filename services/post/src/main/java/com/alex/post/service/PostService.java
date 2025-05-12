@@ -21,5 +21,7 @@ public interface PostService {
 
     List<PostResponse> findPostsByUserId(Pageable pageable, String authToken, Integer userId);
 
+    List<PostResponse> findLoggedUserFeed(Pageable pageable, String authToken, String userId);
+
     String deletePostById(Integer postId, String userId);
 }
