@@ -73,6 +73,15 @@ public class PostController {
         return ResponseEntity.ok(postService.findPostsByUserId(pageable, authToken, userId));
     }
 
+    @GetMapping("/my-feed")
+    public ResponseEntity<List<PostResponse>> findLoggedUserFeed(
+            @PageableDefault(size = 10, page = 0) Pageable pageable,
+            @RequestHeader(value = "Authorization") String authToken,
+            @RequestHeader(value = "X-User-Id") String userId
+    ){
+        return ResponseEntity.ok(postService.findLoggedUserFeed(pageable, authToken, userId));
+    }
+
     @DeleteMapping("/{post-id}")
     public ResponseEntity<String> deletePostById(
             @PathVariable("post-id") Integer postId,

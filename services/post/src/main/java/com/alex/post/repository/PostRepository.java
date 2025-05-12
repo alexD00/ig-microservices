@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> findPostsByUserId(Pageable pageable, Integer userId);
+
+    List<Post> findAllByUserId(Integer userId);
 }

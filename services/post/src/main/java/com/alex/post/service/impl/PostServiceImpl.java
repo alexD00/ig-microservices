@@ -1,5 +1,6 @@
 package com.alex.post.service.impl;
 
+import com.alex.post.client.ActionClient;
 import com.alex.post.client.UserClient;
 import com.alex.post.dto.PostRequest;
 import com.alex.post.dto.PostResponse;
@@ -13,13 +14,17 @@ import feign.FeignException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +34,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final PostMapper postMapper;
     private final UserClient userClient;
+    private final ActionClient actionClient;
 
     public PostResponse createPost(PostRequest postRequest, String authToken, String userId){
         try {
@@ -109,6 +115,44 @@ public class PostServiceImpl implements PostService {
         }
 
         return postResponseList;
+    }
+
+    @Override
+    public List<PostResponse> findLoggedUserFeed(Pageable pageable, String authToken, String userId) {
+        // Ensure that user exists
+        try {
+            userClient.findUserById(Integer.valueOf(userId), authToken);
+        } catch (FeignException.NotFound ex) {
+            throw new EntityNotFoundException("User with id: " + userId + " was not found");
+        }
+
+        List<Integer> followingsIdList;
+        List<Post> postList = new ArrayList<>();
+
+        try {
+            followingsIdList = actionClient.findUserFollowing(Integer.valueOf(userId), authToken);
+        }catch (FeignException.FeignClientException ex) {
+            throw new RuntimeException(ex);
+        }
+
+        for (int followingId: followingsIdList){
+            postList.addAll(postRepository.findAllByUserId(followingId));
+        }
+
+        postList.sort(Comparator.comparing(Post::getCreatedAt).reversed());
+
+        // Pagination manually
+        int start = (int) pageable.getOffset();
+        // If start is greater than postList size return empty list to avoid exception
+        if (start >= postList.size()){
+            return new ArrayList<>();
+        }
+        int end = Math.min(start + pageable.getPageSize(), postList.size());
+        List<Post> pagedPosts = postList.subList(start, end);
+
+        return pagedPosts.stream()
+                .map(postMapper::toPostResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
