@@ -28,6 +28,7 @@ public class User implements UserDetails {
     private String password;
     private Integer numFollowers;
     private Integer numFollowings;
+    private Integer numOfPosts;
     private Boolean isAccountPublic;
     @Enumerated(value = EnumType.STRING)
     private Role role;

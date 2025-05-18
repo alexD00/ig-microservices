@@ -16,7 +16,7 @@ public class ActionConsumer {
 
     private final UserRepository userRepository;
 
-    @KafkaListener(topics = "user-follow-topic", groupId = "user-service")
+    @KafkaListener(topics = "user-action-topic", groupId = "user-service")
     public void handleFollowUnfollowEvents(String message){
         String[] parts = message.split("_");
         Integer followerId = Integer.parseInt(parts[1]);
@@ -43,6 +43,7 @@ public class ActionConsumer {
             user.setNumFollowers(userData);
             userRepository.save(user);
         }
+        log.info("Updated num of followers of userId: {} successfully", userId);
     }
 
     private void updateFollowings(Integer userId, Integer userData) {
@@ -53,5 +54,6 @@ public class ActionConsumer {
             user.setNumFollowings(userData);
             userRepository.save(user);
         }
+        log.info("Updated num of followings of userId: {} successfully", userId);
     }
 }

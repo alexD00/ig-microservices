@@ -11,6 +11,7 @@ public record UserResponse(
         String username,
         Integer numFollowers,
         Integer numFollowings,
+        Integer numOfPosts,
         Boolean isAccountPublic,
         LocalDateTime createdAt
 ) implements Serializable {
