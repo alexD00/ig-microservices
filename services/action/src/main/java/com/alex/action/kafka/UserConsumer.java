@@ -33,11 +33,11 @@ public class UserConsumer {
         } else if (message.startsWith("DELETEUSERACTIVITY")){
             deleteUserActivity(userId);
         } else {
-            log.error("This Kafka message is not supported for user topic");
+            log.error("This Kafka message is not supported in the action topic");
         }
     }
 
-    public void approveAllFollowerRequests(int userId){
+    private void approveAllFollowerRequests(int userId){
         List<Integer> followerRequesterId = followerRequestRepository
                 .findFollowerRequestsOfLoggedUser(userId)
                 .stream()
@@ -52,7 +52,7 @@ public class UserConsumer {
         }
     }
 
-    public void deleteUserActivity(int userId){
+    private void deleteUserActivity(int userId){
         log.warn("Removing all follow requests sent or received by userId: {}...", userId);
         followerRequestRepository.deleteFollowerRequestByUserId(userId);
         followerRequestRepository.deleteFollowerRequestByFollowerRequesterId(userId);

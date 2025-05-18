@@ -33,7 +33,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final ActionClient actionClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private static final String TOPIC = "action-topic";
+    private static final String ACTIONTOPIC = "action-topic";
+    private static final String POSTTOPIC = "post-topic";
 
     @Override
     public AuthResponse updateUser(UserRequest userRequest, String authToken){
@@ -44,7 +45,7 @@ public class UserServiceImpl implements UserService {
         // If user changes their account from private to public, automatically approve all follower requests
         if (!user.getIsAccountPublic() && userRequest.isAccountPublic()){
             String message = "BATCHAPPROVE_" + user.getId();
-            kafkaTemplate.send(TOPIC, message);
+            kafkaTemplate.send(ACTIONTOPIC, message);
         }
 
         user.setFirstName(userRequest.firstName());
@@ -201,7 +202,11 @@ public class UserServiceImpl implements UserService {
 
         // Remove user activity in action service
         String message = "DELETEUSERACTIVITY_" + authUserId;
-        kafkaTemplate.send(TOPIC, message);
+        kafkaTemplate.send(ACTIONTOPIC, message);
+
+        // Delete all user posts
+        message = "DELETEUSERPOSTS_" + authUserId;
+        kafkaTemplate.send(POSTTOPIC, message);
 
         userRepository.deleteById(authUserId);
         log.warn("User with id: {} was deleted successfully", authUserId);
