@@ -45,6 +45,15 @@ public class FollowerController {
         return new ResponseEntity<>(followerService.approveRejectFollowerRequest(decision, userId, followerId), HttpStatus.OK);
     }
 
+    @DeleteMapping("/followers/{follower-id}/remove")
+    public ResponseEntity<String> removeUserFollower(
+            @RequestHeader(value = "X-User-Id") String userId,
+            @RequestHeader(value = "Authorization") String authToken,
+            @PathVariable(value = "follower-id") Integer followerId
+            ){
+        return new ResponseEntity<>(followerService.removeUserFollower(userId, authToken, followerId), HttpStatus.OK);
+    }
+
     @GetMapping("/followers/{user-id}")
     public ResponseEntity<List<Integer>> findUserFollowers(
             @PathVariable("user-id") Integer userId

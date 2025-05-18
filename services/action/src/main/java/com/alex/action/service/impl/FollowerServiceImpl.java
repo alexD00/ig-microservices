@@ -103,6 +103,32 @@ public class FollowerServiceImpl implements FollowerService {
         }
     }
 
+    @Override
+    public String removeUserFollower(String userId, String authToken, Integer followerId) {
+        try {
+            userClient.findUserById(followerId, authToken); // Check if follower exists
+        } catch (FeignException.NotFound ex) {
+            throw new EntityNotFoundException("User with id: " + followerId + " was not found");
+        }
+
+        if (Integer.parseInt(userId) == followerId){
+            throw new InvalidActionException("A user cannot follow their own account");
+        }
+
+        Optional<Follower> optionalFollower = followerRepository
+                .findByUserIdAndFollowerId(Integer.parseInt(userId), followerId);
+
+        if (optionalFollower.isEmpty()){
+            throw new InvalidActionException("UserId: " + followerId + " does not follow userId: " + userId);
+        }
+
+        // If follower exists, then delete it
+        unfollowUser(Integer.parseInt(userId), followerId);
+
+        log.info("UserId: {} removed followerId: {} from their followers", userId, followerId);
+        return "UserId: " + userId + " removed followerId: " + followerId + " from their followers";
+    }
+
     public String followUser(int userId, int followerId){
         Follower follower = new Follower(userId, followerId, LocalDateTime.now());
 

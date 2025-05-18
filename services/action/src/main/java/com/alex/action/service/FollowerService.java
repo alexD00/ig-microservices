@@ -14,6 +14,8 @@ public interface FollowerService {
 
     String approveRejectFollowerRequest(FollowerRequestDecision decision, String userId, Integer followerId);
 
+    String removeUserFollower(String userId, String authToken, Integer followerId);
+
     List<Integer> findUserFollowers(Integer userId);
 
     List<Integer> findUserFollowing(Integer userId);
