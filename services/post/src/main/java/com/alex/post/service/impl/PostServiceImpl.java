@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final UserClient userClient;
     private final ActionClient actionClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private static final String USER_POST_TOPIC = "user-post-topic";
 
     public PostResponse createPost(PostRequest postRequest, String authToken, String userId){
         checkUserExists(Integer.parseInt(userId), authToken);
@@ -42,6 +45,8 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(post);
         log.info("Post with id: {} created successfully by user with id: {}", post.getId(), userId);
+
+        updateNumOfPostsByUserId(Integer.parseInt(userId));
 
         return postMapper.toPostResponse(post);
     }
@@ -158,6 +163,8 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(postId);
         log.warn("Post with id: {} was deleted successfully", post.getId());
 
+        updateNumOfPostsByUserId(Integer.parseInt(userId));
+
         return "Deleted post with id: " + postId;
     }
 
@@ -184,5 +191,11 @@ public class PostServiceImpl implements PostService {
         } catch (FeignException.NotFound ex) {
             throw new EntityNotFoundException("User with id: " + userId + " was not found");
         }
+    }
+
+    private void updateNumOfPostsByUserId(int userId){
+        int numOfPostsOfLoggedUser = postRepository.countNumOfPostsByUserId(userId);
+        String message = "UPDATENUMOFPOSTS_" + userId + "_" + numOfPostsOfLoggedUser;
+        kafkaTemplate.send(USER_POST_TOPIC, message);
     }
 }

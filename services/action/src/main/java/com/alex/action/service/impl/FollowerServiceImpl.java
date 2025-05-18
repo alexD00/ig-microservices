@@ -30,7 +30,7 @@ public class FollowerServiceImpl implements FollowerService {
     private final FollowerRequestRepository followerRequestRepository;
     private final UserClient userClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
-    private static final String TOPIC = "user-follow-topic";
+    private static final String USER_ACTION_TOPIC = "user-action-topic";
 
     @Override
     public String followUnfollowUser(FollowRequest followRequest, Integer userId, String authToken, String followerId) {
@@ -137,7 +137,7 @@ public class FollowerServiceImpl implements FollowerService {
         int userData = followerRepository.countNumOfFollowers(userId);
         int followerData = followerRepository.countNumOfFollowings(followerId);
         String message = "FOLLOW_" + followerId + "_" + userId + "_" + followerData + "_" + userData;
-        kafkaTemplate.send(TOPIC, message);
+        kafkaTemplate.send(USER_ACTION_TOPIC, message);
 
         log.info("User with id: {} started following user with id: {}", followerId, userId);
         return "User with id: " + followerId + " started following user with id: " + userId;
@@ -149,7 +149,7 @@ public class FollowerServiceImpl implements FollowerService {
         int userData = followerRepository.countNumOfFollowers(userId);
         int followerData = followerRepository.countNumOfFollowings(followerId);
         String message = "UNFOLLOW_" + followerId + "_" + userId + "_" + followerData + "_" + userData;
-        kafkaTemplate.send(TOPIC, message);
+        kafkaTemplate.send(USER_ACTION_TOPIC, message);
 
         log.info("User with id: {} unfollowed user with id: {}", followerId, userId);
         return "User with id: " + followerId + " unfollowed user with id: " + userId;
