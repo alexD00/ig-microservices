@@ -1,8 +1,9 @@
 package com.alex.action.service.impl;
 
 import com.alex.action.client.PostClient;
+import com.alex.action.client.UserClient;
 import com.alex.action.dto.LikeRequest;
-import com.alex.action.dto.PostDto;
+import com.alex.action.dto.UserDto;
 import com.alex.action.exception.InvalidActionException;
 import com.alex.action.model.Like;
 import com.alex.action.repository.LikeRepository;
@@ -15,6 +16,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,23 +27,24 @@ public class LikeServiceImpl implements LikeService {
 
     private final LikeRepository likeRepository;
     private final PostClient postClient;
+    private final UserClient userClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private static final String POST_ACTION_TOPIC = "post-action-topic";
 
     @Override
     public String likeUnlikePost(LikeRequest likeRequest, Integer postId, String authToken, String userId) {
-        PostDto postDto;
+        checkPostExistsAndPermissions(authToken, userId, postId);
 
-        try {
-            postDto = postClient.findPostById(authToken, userId, postId);
-        }catch (FeignException.NotFound | FeignException.Forbidden ex){
-            if (ex instanceof FeignException.NotFound){
-                throw new EntityNotFoundException("Post with id " + postId + " was not found");
-            }
-            throw new InvalidActionException(
-                    "User cannot like/unlike this post because post author " +
-                            "has a private account and user doesn't follow them");
-        }
+//        try {
+//            postDto = postClient.findPostById(authToken, userId, postId);
+//        }catch (FeignException.NotFound | FeignException.Forbidden ex){
+//            if (ex instanceof FeignException.NotFound){
+//                throw new EntityNotFoundException("Post with id " + postId + " was not found");
+//            }
+//            throw new InvalidActionException(
+//                    "User cannot like/unlike this post because post author " +
+//                            "has a private account and user doesn't follow them");
+//        }
 
         Optional<Like> optionalLike = likeRepository.findByUserIdAndPostId(Integer.parseInt(userId), postId);
         if (likeRequest.isLike()){
@@ -69,9 +73,37 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
+    @Override
+    public List<UserDto> findUserIdsWhoLikedPost(Integer postId, String authToken, String userId) {
+        checkPostExistsAndPermissions(authToken, userId, postId);
+
+        List<Integer> userIdList = likeRepository.findUserIdsByPostId(postId);
+        List<UserDto> userDtoList = new ArrayList<>();
+
+        for (int id: userIdList){
+            UserDto user = userClient.findUserById(id, authToken);
+            userDtoList.add(user);
+        }
+
+        return userDtoList;
+    }
+
     private void updateNumOfLikes(int postId){
         Integer numOfLikes = likeRepository.findNumOfLikesOfPost(postId);
         String message = "UPDATENUMOFLIKES_" + postId + "_" + numOfLikes;
         kafkaTemplate.send(POST_ACTION_TOPIC, message);
+    }
+
+    private void checkPostExistsAndPermissions(String authToken, String loggedUserId, int postId){
+        try {
+            postClient.findPostById(authToken, loggedUserId, postId);
+        }catch (FeignException.NotFound | FeignException.Forbidden ex){
+            if (ex instanceof FeignException.NotFound){
+                throw new EntityNotFoundException("Post with id " + postId + " was not found");
+            }
+            throw new InvalidActionException(
+                    "User cannot like/unlike this post because post author " +
+                            "has a private account and user doesn't follow them");
+        }
     }
 }
