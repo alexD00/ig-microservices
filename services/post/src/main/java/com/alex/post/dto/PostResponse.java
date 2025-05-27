@@ -7,6 +7,7 @@ public record PostResponse(
         Integer id,
         String content,
         Integer userId,
+        Integer numOfLikes,
         LocalDateTime createdAt
 ) {
 }

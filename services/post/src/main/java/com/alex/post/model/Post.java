@@ -19,5 +19,6 @@ public class Post {
     private Integer id;
     private String content;
     private Integer userId;
+    private Integer numOfLikes;
     private LocalDateTime createdAt;
 }
