@@ -14,6 +14,7 @@ public class PostMapper {
         return Post.builder()
                 .content(postRequest.content())
                 .userId(userId)
+                .numOfLikes(0)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
@@ -23,6 +24,7 @@ public class PostMapper {
                 post.getId(),
                 post.getContent(),
                 post.getUserId(),
+                post.getNumOfLikes(),
                 post.getCreatedAt()
         );
     }

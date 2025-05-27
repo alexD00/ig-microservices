@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS follower_requests
   follower_request_sent_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY(user_id, follower_requester_id)
 );
+
+CREATE TABLE IF NOT EXISTS likes
+(
+  user_id INTEGER NOT NULL,
+  post_id INTEGER NOT NULL,
+  liked_post_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, post_id)
+);
