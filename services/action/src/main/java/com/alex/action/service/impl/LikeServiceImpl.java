@@ -35,17 +35,6 @@ public class LikeServiceImpl implements LikeService {
     public String likeUnlikePost(LikeRequest likeRequest, Integer postId, String authToken, String userId) {
         checkPostExistsAndPermissions(authToken, userId, postId);
 
-//        try {
-//            postDto = postClient.findPostById(authToken, userId, postId);
-//        }catch (FeignException.NotFound | FeignException.Forbidden ex){
-//            if (ex instanceof FeignException.NotFound){
-//                throw new EntityNotFoundException("Post with id " + postId + " was not found");
-//            }
-//            throw new InvalidActionException(
-//                    "User cannot like/unlike this post because post author " +
-//                            "has a private account and user doesn't follow them");
-//        }
-
         Optional<Like> optionalLike = likeRepository.findByUserIdAndPostId(Integer.parseInt(userId), postId);
         if (likeRequest.isLike()){
             if (optionalLike.isEmpty()){
@@ -102,7 +91,7 @@ public class LikeServiceImpl implements LikeService {
                 throw new EntityNotFoundException("Post with id " + postId + " was not found");
             }
             throw new InvalidActionException(
-                    "User cannot like/unlike this post because post author " +
+                    "User cannot view this post because post author " +
                             "has a private account and user doesn't follow them");
         }
     }
