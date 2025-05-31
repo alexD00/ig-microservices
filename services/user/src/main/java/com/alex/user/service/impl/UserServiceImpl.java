@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -190,6 +191,16 @@ public class UserServiceImpl implements UserService {
         }
 
         return userRequestList;
+    }
+
+    @Override
+    public boolean findUserAccountStatus(Integer userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()){
+            throw new EntityNotFoundException("User with id: " + userId + " was not found");
+        }
+
+        return user.get().getIsAccountPublic();
     }
 
     @Override
