@@ -1,6 +1,5 @@
 package com.alex.action.client;
 
-import com.alex.action.dto.PostDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,10 +9,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface PostClient {
 
     @GetMapping("api/v1/posts/{post-id}")
-    PostDto findPostById(
+    void findPostById(
             @RequestHeader(value = "Authorization") String token,
             @RequestHeader(value = "X-User-Id") String loggedUserId,
             @PathVariable("post-id") Integer postId
-
     );
 }

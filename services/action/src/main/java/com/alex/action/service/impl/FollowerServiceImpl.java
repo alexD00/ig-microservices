@@ -3,7 +3,6 @@ package com.alex.action.service.impl;
 import com.alex.action.client.UserClient;
 import com.alex.action.dto.FollowRequest;
 import com.alex.action.dto.FollowerRequestDecision;
-import com.alex.action.dto.UserDto;
 import com.alex.action.exception.InvalidActionException;
 import com.alex.action.model.Follower;
 import com.alex.action.model.FollowerRequest;
@@ -34,9 +33,10 @@ public class FollowerServiceImpl implements FollowerService {
 
     @Override
     public String followUnfollowUser(FollowRequest followRequest, Integer userId, String authToken, String followerId) {
-        UserDto userToFollow;
+        boolean isUserAccountPublic;
         try {
-            userToFollow = userClient.findUserById(userId, authToken); // Check if user to follow exists and get the account type
+            userClient.findUserById(userId, authToken); // Check if user to follow exists
+            isUserAccountPublic = userClient.findUserAccountStatus(userId, authToken); // Get the account type
         } catch (FeignException.NotFound ex) {
             throw new EntityNotFoundException("User with id: " + userId + " was not found");
         }
@@ -60,7 +60,7 @@ public class FollowerServiceImpl implements FollowerService {
         }
 
         // If user to follow has private account then create a follow request
-        if (!userToFollow.isAccountPublic()){
+        if (!isUserAccountPublic){
             return createFollowRequest(userId, Integer.valueOf(followerId));
         }
 
