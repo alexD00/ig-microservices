@@ -88,6 +88,13 @@ public class UserController {
         return ResponseEntity.ok(userService.findFollowRequestsOfLoggedUser(authToken));
     }
 
+    @GetMapping("/{user-id}/is-account-public")
+    public ResponseEntity<Boolean> findUserAccountStatus(
+            @PathVariable("user-id") Integer userId
+    ){
+        return ResponseEntity.ok(userService.findUserAccountStatus(userId));
+    }
+
     @DeleteMapping
     public ResponseEntity<String> deleteLoggedUser(
             @RequestHeader(value = "Authorization") String authToken

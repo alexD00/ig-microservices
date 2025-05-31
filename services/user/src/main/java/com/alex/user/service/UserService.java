@@ -3,6 +3,8 @@ package com.alex.user.service;
 import com.alex.user.dto.AuthResponse;
 import com.alex.user.dto.UserRequest;
 import com.alex.user.dto.UserResponse;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -25,6 +27,8 @@ public interface UserService {
     List<UserResponse> findUserFollowings(Integer userId, String authToken);
 
     List<UserResponse> findFollowRequestsOfLoggedUser(String authToken);
+
+    boolean findUserAccountStatus(Integer userId);
 
     String deleteLoggedUser(String authToken);
 }
