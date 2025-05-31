@@ -3,7 +3,6 @@ package com.alex.action.service.impl;
 import com.alex.action.client.PostClient;
 import com.alex.action.client.UserClient;
 import com.alex.action.dto.LikeRequest;
-import com.alex.action.dto.UserDto;
 import com.alex.action.exception.InvalidActionException;
 import com.alex.action.model.Like;
 import com.alex.action.repository.LikeRepository;
@@ -16,7 +15,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,18 +61,10 @@ public class LikeServiceImpl implements LikeService {
     }
 
     @Override
-    public List<UserDto> findUserIdsWhoLikedPost(Integer postId, String authToken, String userId) {
+    public List<Integer> findUserIdsWhoLikedPost(Integer postId, String authToken, String userId) {
         checkPostExistsAndPermissions(authToken, userId, postId);
 
-        List<Integer> userIdList = likeRepository.findUserIdsByPostId(postId);
-        List<UserDto> userDtoList = new ArrayList<>();
-
-        for (int id: userIdList){
-            UserDto user = userClient.findUserById(id, authToken);
-            userDtoList.add(user);
-        }
-
-        return userDtoList;
+        return likeRepository.findUserIdsByPostId(postId);
     }
 
     private void updateNumOfLikes(int postId){

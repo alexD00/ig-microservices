@@ -1,6 +1,5 @@
 package com.alex.action.client;
 
-import com.alex.action.dto.UserDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,7 +9,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface UserClient {
 
     @GetMapping("api/v1/users/{user-id}")
-    UserDto findUserById(
+    void findUserById(
+            @PathVariable("user-id") Integer userId,
+            @RequestHeader("Authorization") String token
+    );
+
+    @GetMapping("api/v1/users/{user-id}/is-account-public")
+    boolean findUserAccountStatus(
             @PathVariable("user-id") Integer userId,
             @RequestHeader("Authorization") String token
     );

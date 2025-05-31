@@ -1,7 +1,6 @@
 package com.alex.action.controller;
 
 import com.alex.action.dto.LikeRequest;
-import com.alex.action.dto.UserDto;
 import com.alex.action.service.LikeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class LikeController {
     }
 
     @GetMapping("/likes/posts/{post-id}")
-    public ResponseEntity<List<UserDto>> findUsersWhoLikedPost(
+    public ResponseEntity<List<Integer>> findUsersWhoLikedPost(
          @PathVariable("post-id") Integer postId,
          @RequestHeader(value = "Authorization") String authToken,
          @RequestHeader(value = "X-User-Id") String userId
